@@ -336,7 +336,7 @@ kubectl exec -n ${NAMESPACE} ${POD} -- find /mnt/files-storage/kv-cache -maxdept
 ```
 
 Expected output: `du -sh` shows hundreds of MB to several GB, and `find` lists a path like
-`/mnt/files-storage/<model>_<hash>_r0/<block-config>/<tp-config>/...` (vLLM native) or `/mnt/files-storage/kv-cache/<model>-xxx.pt` (LMCache).
+`/mnt/files-storage/kv-cache/<model>_<hash>_r0/<block-config>/<tp-config>/...` (vLLM native) or `/mnt/files-storage/kv-cache/<model>-xxx.pt` (LMCache).
 
 If you have monitoring set up, confirm via `vllm:kv_offload_total_bytes` (vLLM native) or `lmcache:local_storage_usage` (LMCache) in the metrics explorer.
 
