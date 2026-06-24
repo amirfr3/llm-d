@@ -148,25 +148,31 @@ export MODEL_SERVER=vllm # vllm
 export CONNECTOR=native  # native
 export VARIANT=cpu       # cpu | fs
 export INFRA_PROVIDER=base  # base | gke
-kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/cpu/${INFRA_PROVIDER}/
+export VARIANT=cpu  # For cpu only offloading
+kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/${VARIANT}/${INFRA_PROVIDER}/
 ```
 
 #### vLLM native — CPU RAM + Filesystem
 
 This path adds a shared filesystem tier using vLLM's native multi-tier offloading. It requires a ReadWriteMany PVC mounted at `/mnt/files-storage`.
 
-First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment.
+First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment - edit [`manifests/pvc.yaml`](./manifests/pvc.yaml) (`"lustre"` / `"efs-sc"`) to set your storage class (or leave it blank for the cluster default), then apply:
 
+<!-- llm-d-cicd:skip start -->
 ```bash
-export STORAGE_CLASS="" # cluster default if empty; or e.g. "lustre" / "efs-sc"
-envsubst < ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml | kubectl apply -n ${NAMESPACE} -f -
+kubectl apply -n ${NAMESPACE} -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml
 ```
+<!-- llm-d-cicd:skip end -->
+
+> [!NOTE]
+> The FS overlay's kustomization.yaml also includes this PVC, so [`manifests/pvc.yaml`](./manifests/pvc.yaml) gets applied anyway with the `kubectl apply` below.
 
 Then deploy the model server:
 
 ```bash
 export INFRA_PROVIDER=base  # base | gke
-kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/fs/${INFRA_PROVIDER}/
+export VARIANT=fs  # For cpu+storage offloading
+kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/${VARIANT}/${INFRA_PROVIDER}/
 ```
 
 #### LMCache
@@ -361,8 +367,15 @@ export TPU_VERSION=v7  # v6 | v7
 kubectl delete -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/tpu/${TPU_VERSION}/vllm/native/cpu --ignore-not-found
 ```
 
+**Storage offloading:**
+
 ```bash
 kubectl delete -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml -n ${NAMESPACE} --ignore-not-found  # if a PVC was created
+```
+
+**For all paths:**
+
+```bash
 kubectl delete namespace ${NAMESPACE}
 ```
 
