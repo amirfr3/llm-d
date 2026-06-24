@@ -144,7 +144,7 @@ Deploy **one** of the paths below. Each `kubectl apply -k` targets an overlay di
 
 ```bash
 export INFRA_PROVIDER=base  # base | gke
-export VARIANT=cpu  # For cpu only offloading
+export VARIANT=cpu  # cpu only offloading
 kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/${VARIANT}/${INFRA_PROVIDER}/
 ```
 
@@ -152,22 +152,22 @@ kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelse
 
 This path adds a shared filesystem tier using vLLM's native multi-tier offloading. It requires a ReadWriteMany PVC mounted at `/mnt/files-storage`.
 
-First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment - edit [`manifests/pvc.yaml`](./manifests/pvc.yaml) (`"lustre"` / `"efs-sc"`) to set your storage class (or leave it blank for the cluster default), then apply:
+First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment - edit [`manifests/pvc/pvc.yaml`](./manifests/pvc/pvc.yaml) (`"lustre"` / `"efs-sc"`) to set your storage class (or leave it blank for the cluster default), then apply:
 
 <!-- llm-d-cicd:skip start -->
 ```bash
-kubectl apply -n ${NAMESPACE} -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml
+kubectl apply -n ${NAMESPACE} -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc/pvc.yaml
 ```
 <!-- llm-d-cicd:skip end -->
 
 > [!NOTE]
-> The FS overlay's kustomization.yaml also includes this PVC, so [`manifests/pvc.yaml`](./manifests/pvc.yaml) gets applied anyway with the `kubectl apply` below.
+> The FS overlay's kustomization.yaml also includes this PVC, so [`manifests/pvc/pvc.yaml`](./manifests/pvc/pvc.yaml) gets applied anyway with the `kubectl apply` below.
 
 Then deploy the model server:
 
 ```bash
 export INFRA_PROVIDER=base  # base | gke
-export VARIANT=fs  # For cpu+storage offloading
+export VARIANT=fs  # cpu+storage offloading
 kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/gpu/vllm/native/${VARIANT}/${INFRA_PROVIDER}/
 ```
 
@@ -323,7 +323,7 @@ kubectl delete -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/models
 **Storage offloading:**
 
 ```bash
-kubectl delete -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml -n ${NAMESPACE} --ignore-not-found  # if a PVC was created
+kubectl delete -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc/pvc.yaml -n ${NAMESPACE} --ignore-not-found  # if a PVC was created
 ```
 
 **For all paths:**
