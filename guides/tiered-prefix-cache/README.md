@@ -156,7 +156,7 @@ kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelse
 
 This path adds a shared filesystem tier using vLLM's native multi-tier offloading. It requires a ReadWriteMany PVC mounted at `/mnt/files-storage`.
 
-First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment - edit [`manifests/pvc/pvc.yaml`](./manifests/pvc/pvc.yaml) (`"lustre"` / `"efs-sc"`) to set your storage class (or leave it blank for the cluster default), then apply:
+First, provision the PVC. See [Storage Backends](#storage-backends) to configure a `StorageClass` for your environment - uncomment the `storageClassName=""` [`manifests/pvc/pvc.yaml`](./manifests/pvc/pvc.yaml) and specify a storage class (`"lustre"` / `"efs-sc"`) to set your storage class (or leave it commented out for cluster default), then apply:
 
 <!-- llm-d-cicd:skip start -->
 ```bash

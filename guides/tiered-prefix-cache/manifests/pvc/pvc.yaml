@@ -8,4 +8,5 @@ spec:
   resources:
     requests:
       storage: 9000Gi
-  storageClassName: "" # Specify the storage class here, or leave this empty to use the default storage class.
+  # Uncomment the following line to specify a storage class for the PVC. If you leave it commented out, the default storage class will be used.
+  # storageClassName: "" 
