@@ -1,13 +1,13 @@
-name: Nightly - Tiered Prefix Cache CPU Offloading E2E (OCP GPU)
+name: Nightly - Tiered Prefix Cache Storage Offloading E2E (OCP GPU)
 
 on:
   workflow_dispatch:
     inputs:
       decode_pods:
-        description: 'Number of decode (vllm "standalone") pods (default "auto", means what was configured on the scenario)'
+        description: 'Number of decode (vllm "standalone") pods (default "1"; "auto" means what was configured on the scenario)'
         required: false
         type: 'string'
-        default: 'auto'
+        default: '1'
       prefill_pods:
         description: 'Number of prefill pods (default "auto", means what was configured on the scenario)'
         required: false
@@ -40,26 +40,22 @@ on:
         description: 'Workload profile to be used during "run" operation (check list under "workload/profiles")'
         required: false
         default: 'sanity_random.yaml'
-#        default: 'guide_tiered-prefix-cache_1.yaml'
         type: 'string'
       cleanup:
         description: 'Cleanup the llm-d stack stood up by this workflow'
         required: false
         default: 'true'
         type: string
-#  push:
-#    branches:
-#      - main
 
   schedule:
-    - cron: '0 12 * * *'  # 10:00 UTC daily
+    - cron: '0 14 * * *'  # 14:00 UTC daily (staggered from the CPU offloading run at 12:00 UTC to avoid GPU contention)
 
 permissions:
   contents: write
   actions: read
 
 concurrency:
-  group: nightly-e2e-tiered-prefix-cache-ibm
+  group: nightly-e2e-tiered-prefix-cache-ibm-fs
   cancel-in-progress: true
 
 jobs:
@@ -69,26 +65,25 @@ jobs:
       scenario_dir: ${{ inputs.scenario_dir || 'guides' }}
       standup_method: ${{ inputs.standup_method || 'kustomize' }}
       standup_scenario: ${{ inputs.standup_scenario || 'tiered-prefix-cache' }}
-      decode_pods: ${{ inputs.decode_pods || 'auto' }}
+      decode_pods: ${{ inputs.decode_pods || '1' }}
       prefill_pods: ${{ inputs.prefill_pods || 'auto' }}
       accelerator_type: ${{ inputs.accelerator_type || 'gpu' }}
       backend_type: ${{ inputs.backend_type || 'vllm' }}
       infra_provider: ${{ inputs.infra_provider || 'base' }}
-      offloading_target: ${{ inputs.offloading_target || 'cpu' }}
+      offloading_target: ${{ inputs.offloading_target || 'fs' }}
       connector: ${{ inputs.connector || 'native' }}
-      cluster_namespace: ${{ inputs.cluster_namespace || 'llm-d-nightly-tiered-prefix-cache-ibm-gpu' }}
-      helm_release: ${{ inputs.helm_release || 'llmdbenchcicdr-ibm' }}
-      workspace_dir: ${{ inputs.workspace_dir || '/tmp/llmdbenchcicdk-ibm' }}
+      cluster_namespace: ${{ inputs.cluster_namespace || 'llm-d-nightly-tiered-prefix-cache-ibm-gpu-fs' }}
+      helm_release: ${{ inputs.helm_release || 'llmdbenchcicdr-ibm-fs' }}
+      workspace_dir: ${{ inputs.workspace_dir || '/tmp/llmdbenchcicdk-ibm-fs' }}
       bucket_project: ${{ inputs.bucket_project || 'llm-d-scale' }}
       bucket_provider: ${{ inputs.bucket_provider || 'gcs' }}
-      bucket_path: ${{ inputs.bucket_path || 'llm-d-benchmarks/regressions/tiered-prefix-cache' }}
+      bucket_path: ${{ inputs.bucket_path || 'llm-d-benchmarks/regressions/tiered-prefix-cache-fs' }}
       gateway_class: ${{ inputs.gateway_class || 'epponly' }}
       monitoring_enabled: ${{ inputs.monitoring_enabled || 'false' }}
       dry_run: ${{ inputs.dry_run || 'false' }}
       verbose: ${{ inputs.verbose || 'false' }}
       harness: ${{ inputs.harness || 'inference-perf' }}
       workload: ${{ inputs.workload || 'sanity_random.yaml' }}
-#      workload: ${{ inputs.workload || 'guide_tiered-prefix-cache_1.yaml' }}
       cleanup: ${{ inputs.cleanup || 'true' }}
     secrets: inherit
 
@@ -97,8 +92,8 @@ jobs:
     if: always()
     uses: llm-d/llm-d-infra/.github/workflows/reusable-update-badge.yaml@main
     with:
-      badge_name: tiered-prefix-cache-cpu-offloading-ocp
-      badge_label: "VLLM GPU"
+      badge_name: tiered-prefix-cache-fs-offloading-ocp
+      badge_label: "VLLM GPU FS"
       result: ${{ needs.nightly.result }}
       dry_run: ${{ inputs.dry_run || 'false' }}
       failure_category: ${{ needs.nightly.outputs.failure_category }}
