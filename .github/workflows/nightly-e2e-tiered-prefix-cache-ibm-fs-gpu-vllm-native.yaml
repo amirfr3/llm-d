@@ -73,7 +73,7 @@ jobs:
       offloading_target: ${{ inputs.offloading_target || 'fs' }}
       connector: ${{ inputs.connector || 'native' }}
       cluster_namespace: ${{ inputs.cluster_namespace || 'llm-d-nightly-tiered-prefix-cache-ibm-gpu-fs' }}
-      helm_release: ${{ inputs.helm_release || 'llmdbenchcicdr-ibm-fs' }}
+      helm_release: ${{ inputs.helm_release || 'llmdbenchcicdr-ibm' }}
       workspace_dir: ${{ inputs.workspace_dir || '/tmp/llmdbenchcicdk-ibm-fs' }}
       bucket_project: ${{ inputs.bucket_project || 'llm-d-scale' }}
       bucket_provider: ${{ inputs.bucket_provider || 'gcs' }}
