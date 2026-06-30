@@ -13,8 +13,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p /mnt/files-storage/kv-cache
-              chmod - R a+rwX /mnt/files-storage/kv-cache
+              mkdir -p /mnt/files-storage/kv-cache && \
+              chmod -R a+rwX /mnt/files-storage/kv-cache && \
               exec vllm serve \
                 Qwen/Qwen3-32B \
                 --tensor-parallel-size=2 \
