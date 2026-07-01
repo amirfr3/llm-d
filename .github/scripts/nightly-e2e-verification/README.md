@@ -11,6 +11,7 @@ still up and `kubectl` is configured against the test cluster.
 ```
 nightly-e2e-verification/
 ├── README.md
+├── run-locally.sh            ← wrapper: sets env vars, runs a verify.py on your laptop
 ├── verify_helpers.py         ← shared helpers (library only; not run directly)
 ├── _template/
 │   └── verify.py             ← copy this for a new scenario
@@ -29,6 +30,32 @@ with:
 ```
 
 If `verify_script` is empty, no verification runs.
+
+## Running locally
+
+Use `run-locally.sh` after an `llmdbenchmark run` finishes. Point it at the
+same workspace dir you passed to llmdbenchmark — the wrapper will pick the
+newest `<user>-<timestamp>/results/<exp>` under it.
+
+```bash
+# Pass the workspace explicitly
+./run-locally.sh tiered-prefix-cache ~/llmdbenchmark
+
+# Or export it once and skip the second arg
+export LLMDBENCH_WORKSPACE=~/llmdbenchmark
+./run-locally.sh tiered-prefix-cache
+```
+
+The wrapper sets the same `LLMDBENCH_*` env vars the CI job sets. Only
+`LLMDBENCH_WORKSPACE` is required; the rest are inferred:
+
+- `LLMDBENCH_CICD_NS` ← `kubectl`current context,
+  falling back to `default`
+- `LLMDBENCH_CICD_SCENARIO` ← the scenario dir name
+- `LLMDBENCH_CICD_{WORKLOAD,HARNESS,DETECTED_MODEL}` ← `<local>` placeholder
+
+Any env var already exported in your shell wins over the wrapper's default,
+so overriding one is just `LLMDBENCH_CICD_NS=my-ns ./run-locally.sh …`.
 
 ## Adding a new scenario
 
