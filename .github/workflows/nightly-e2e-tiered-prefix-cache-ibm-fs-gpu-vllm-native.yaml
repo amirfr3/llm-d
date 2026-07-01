@@ -46,6 +46,11 @@ on:
         required: false
         default: 'true'
         type: string
+      update_badge:
+        description: 'Update the badge for this workflow run ("true", "false")'
+        required: false
+        default: 'true'
+        type: string
 
   schedule:
     - cron: '0 14 * * *'  # 14:00 UTC daily (staggered from the CPU offloading run at 12:00 UTC to avoid GPU contention)
