@@ -1,4 +1,4 @@
-name: Nightly - Tiered Prefix Cache Storage Offloading E2E (GKE GPU)
+name: Nightly - Tiered Prefix Cache Multi-Tier (CPU + Storage) Offloading E2E (GKE GPU)
 
 on:
   workflow_dispatch:
