@@ -239,7 +239,7 @@ def print_checks_table(checks: Iterable[Check]) -> None:
         print(fmt_row(r))
 
 
-def print_metrics_verification(env: dict, metrics: MetricsSummary,
+def verify_checks(env: dict, metrics: MetricsSummary,
                               checks: list[Check]) -> bool:
     """Print the standard report; return True on all-pass, False otherwise."""
     checks = list(checks)

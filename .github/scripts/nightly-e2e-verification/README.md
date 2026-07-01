@@ -1,9 +1,6 @@
 # Nightly E2E verification scripts
 
-One Python file per scenario. Each script imports helpers from
-[`verify_helpers.py`](verify_helpers.py), expresses its checks inline,
-and adds any scenario-specific inspection (PVCs, EPP logs, etc.). No YAML
-config files — the script is the single source of truth.
+Verification scripts for running in the verification step in the nightly e22 ci workflow.
 
 Verification runs between the harness `Run` step and `Teardown` in
 `reusable-ci-nightly-benchmark.yaml` (llm-d-infra), so pods and PVCs are
@@ -81,7 +78,7 @@ metrics.check_aggregated("vllm:time_to_first_token_seconds", "p99", "<=", 2.0)
 # → Check(name="vllm:time_to_first_token_seconds.p99", passed=..., detail="1.85 <= 2.00")
 
 # Pulls metrics.per_pod[pod][metric][aggregate] for every pod, combines with
-# reduce(values), threshold-checks the result. Default reducer is max
+# combine(values), threshold-checks the result. Default combine funciton is max
 # ("did any pod hit the bound?"). Pass any callable that consumes an iterable
 # of floats: max, min, sum, statistics.mean, or a lambda around functools.reduce.
 metrics.check_per_pod("vllm:kv_offload_store_bytes", "max", ">", 0.0)
@@ -89,7 +86,7 @@ metrics.check_per_pod("vllm:kv_cache_usage_perc", "mean", "<=", 80.0, reduce=sta
 # → Check(name="vllm:foo.max (per-pod max)", passed=..., detail="1.02e+09 > 0")
 ```
 
-### Custom (non-metric) checks
+### Adding additional checks
 
 Construct a `v.Check` directly:
 
@@ -97,11 +94,11 @@ Construct a `v.Check` directly:
 v.Check("PVC has KV cache data", passed=n > 0, detail=f"{n} files at /mnt/kv-cache")
 ```
 
-### Finish
+### Verify and print output
 
 ```python
-# Prints the standard report + returns True/False so main() can pick the exit code.
-passed = v.print_metrics_verification(env, metrics, checks)
+# Prints the standard report + returns True/False.
+passed = v.verify_checks(env, metrics, checks)
 sys.exit(0 if passed else 1)
 ```
 
@@ -112,20 +109,23 @@ sys.exit(0 if passed else 1)
 
 Ops: `<=, >=, <, >, ==`
 
-## Workflow env contract
+## Workflow env values
 
-| Variable | Meaning |
-|---|---|
-| `LLMDBENCH_WORKSPACE` | Runner workspace; results dir lives below here |
-| `LLMDBENCH_CICD_NS` | Namespace used for the run (use for `kubectl -n`) |
-| `LLMDBENCH_CICD_SCENARIO` | Scenario name (e.g. `tiered-prefix-cache`) |
-| `LLMDBENCH_CICD_WORKLOAD` | Workload filename (e.g. `tiered-prefix-cache.yaml`) |
-| `LLMDBENCH_CICD_HARNESS` | Harness name (e.g. `inference-perf`) |
-| `LLMDBENCH_CICD_DETECTED_MODEL` | Model id |
-| `LLMDBENCH_CICD_OFFLOADING_TARGET` | `'fs'` / `'cpu'` (tiered-prefix-cache mode) |
-| `GITHUB_STEP_SUMMARY` | Markdown file to append a report to |
-| `GITHUB_RUN_ID` | For traceability |
-| `KUBECONFIG` / `~/.kube/config` | kubectl is already configured |
+`workflow_env()` renames the useful ones to short keys. The rest are read
+directly from `os.environ` when needed.
+
+| Variable | `env[]` key | Meaning |
+|---|---|---|
+| `LLMDBENCH_WORKSPACE` | `env["workspace"]` | Runner workspace; results dir lives below here |
+| `LLMDBENCH_CICD_NS` | `env["namespace"]` | Namespace used for the run (use for `kubectl -n`) |
+| `LLMDBENCH_CICD_SCENARIO` | `env["scenario"]` | Scenario name (e.g. `tiered-prefix-cache`) |
+| `LLMDBENCH_CICD_WORKLOAD` | `env["workload"]` | Workload filename (e.g. `tiered-prefix-cache.yaml`) |
+| `LLMDBENCH_CICD_HARNESS` | `env["harness"]` | Harness name (e.g. `inference-perf`) |
+| `LLMDBENCH_CICD_DETECTED_MODEL` | `env["model"]` | Model id |
+| `GITHUB_RUN_ID` | `env["run_id"]` | For traceability |
+| `LLMDBENCH_CICD_OFFLOADING_TARGET` | _read via `os.environ`_ | `'fs'` / `'cpu'` (tiered-prefix-cache mode) |
+| `GITHUB_STEP_SUMMARY` | _read via `os.environ`_ | Markdown file to append a report to |
+| `KUBECONFIG` / `~/.kube/config` | _used by `kubectl`_ | kubectl is already configured |
 
 Exit code: `0` on success, non-zero on any failure. Read the CI logs to see
 why.

@@ -53,7 +53,7 @@ def main() -> int:
         # v.Check("Custom assertion", passed=True, detail="..."),
     ]
 
-    passed = v.print_metrics_verification(env, metrics, checks)
+    passed = v.verify_checks(env, metrics, checks)
     return 0 if passed else 1
 
 

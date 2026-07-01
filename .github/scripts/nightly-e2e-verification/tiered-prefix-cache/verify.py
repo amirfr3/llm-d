@@ -182,7 +182,7 @@ def main() -> int:
     checks.append(metrics.check_per_pod("vllm:kv_offload_store_bytes", "max", ">", 0.0))
     checks.append(metrics.check_per_pod("vllm:kv_offload_load_bytes",  "max", ">", 0.0))
 
-    passed = v.print_metrics_verification(env, metrics, checks)
+    passed = v.verify_checks(env, metrics, checks)
     return 0 if passed else 1
 
 
